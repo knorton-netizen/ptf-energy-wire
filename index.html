@@ -50,45 +50,48 @@
   <ul id="headline-list"></ul>
 
   <script>
-    // Google Sheet export as TSV (tab-separated)
-    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSlMMB865om-gPDhmU1bTumRO82xhNtfLBf4Xqt8f1E599MlPDkZu3GEA8mOyyR1l1PHvHMP7wUKkSI/pub?output=csv";
+  // Your published Google Sheet link:
+  const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSlMMB865om-gPDhmU1bTumRO82xhNtfLBf4Xqt8f1E599MlPDkZu3GEA8mOyyR1l1PHvHMP7wUKkSI/pub?output=csv";
 
-    function parseTSV(text) {
-      const lines = text.trim().split("\n");
-      if (lines.length <= 1) return [];
+  function parseCSV(text) {
+    const lines = text.trim().split("\n");
+    if (lines.length <= 1) return [];
 
-      // Assume first row is header: Title, URL
-      return lines.slice(1).map(line => {
-        const parts = line.split("\t");
-        return {
-          title: (parts[0] || "").trim(),
-          url: (parts[1] || "").trim()
-        };
-      }).filter(row => row.title && row.url);
-    }
+    // First row is header: Title,URL
+    return lines.slice(1).map(line => {
+      // split into exactly two pieces: title, url
+      const firstComma = line.indexOf(",");
+      if (firstComma === -1) return { title: "", url: "" };
 
-    fetch(SHEET_URL)
-      .then(res => res.text())
-      .then(text => {
-        const entries = parseTSV(text);
-        const listEl = document.getElementById("headline-list");
+      const title = line.slice(0, firstComma).trim();
+      const url = line.slice(firstComma + 1).trim();
 
-        // Show up to 100 entries
-        entries.slice(0, 100).forEach(item => {
-          const li = document.createElement("li");
-          const a = document.createElement("a");
-          a.href = item.url;
-          a.target = "_blank";
-          a.textContent = item.title;
-          li.appendChild(a);
-          listEl.appendChild(li);
-        });
-      })
-      .catch(err => {
-        console.error("Error loading sheet:", err);
-        document.getElementById("headline-list").innerHTML =
-          "<li>Unable to load headlines.</li>";
+      return { title, url };
+    }).filter(row => row.title && row.url);
+  }
+
+  fetch(SHEET_URL)
+    .then(res => res.text())
+    .then(text => {
+      const entries = parseCSV(text);
+      const listEl = document.getElementById("headline-list");
+
+      entries.slice(0, 100).forEach(item => {
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.href = item.url;
+        a.target = "_blank";
+        a.textContent = item.title;
+        li.appendChild(a);
+        listEl.appendChild(li);
       });
-  </script>
+    })
+    .catch(err => {
+      console.error("Error loading sheet:", err);
+      document.getElementById("headline-list").innerHTML =
+        "<li>Unable to load headlines.</li>";
+    });
+</script>
+
 </body>
 </html>
