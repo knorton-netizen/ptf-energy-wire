@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>POWER THE FUTURE WIRE</title>
+  <title>PTF Energy Dispatch</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
@@ -19,43 +19,18 @@
     h1 {
       text-align: center;
       font-size: 40px;
-      margin-bottom: 5px;
+      margin-bottom: 20px;
       letter-spacing: 2px;
-    }
-
-    .updated {
-      text-align: center;
-      font-size: 12px;
-      margin-bottom: 30px;
-      color: #444;
-    }
-
-    .lead a {
-      font-size: 22px;
-      font-weight: bold;
-      text-transform: uppercase;
-      text-decoration: none;
-      color: #000;
-    }
-
-    .list-title {
-      margin-top: 25px;
-      font-size: 14px;
-      text-transform: uppercase;
-      font-weight: bold;
-      border-bottom: 1px solid #000;
-      padding-bottom: 3px;
     }
 
     ul {
       list-style: none;
       padding-left: 0;
-      margin-top: 5px;
     }
 
     li {
-      margin-bottom: 6px;
-      font-size: 15px;
+      margin-bottom: 8px;
+      font-size: 16px;
     }
 
     a {
@@ -70,66 +45,49 @@
 </head>
 <body>
 
-  <h1>POWER THE FUTURE WIRE</h1>
-  <div id="updated" class="updated">Loading…</div>
+  <h1>PTF ENERGY DISPATCH</h1>
 
-  <!-- Lead story will be injected here -->
-  <div id="lead" class="lead"></div>
-
-  <div class="list-title">Latest Energy Headlines</div>
   <ul id="headline-list"></ul>
 
   <script>
-    // Load headlines from headlines.json and render them
-    fetch('headlines.json')
-      .then(function (response) {
-        return response.json();
-      })
-      .then(function (data) {
-        // Updated time
-        var updatedEl = document.getElementById('updated');
-        updatedEl.textContent = 'Updated ' + data.updated;
+    // Google Sheet export as TSV (tab-separated)
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/1xMbiZhgRit6hzrMpif4YCPOMZP631MOaMKPQDqQitv8/export?format=tsv&gid=0";
 
-        var items = data.items || [];
+    function parseTSV(text) {
+      const lines = text.trim().split("\n");
+      if (lines.length <= 1) return [];
 
-        // Separate lead (first item with isLead === true)
-        var leadItem = null;
-        var rest = [];
+      // Assume first row is header: Title, URL
+      return lines.slice(1).map(line => {
+        const parts = line.split("\t");
+        return {
+          title: (parts[0] || "").trim(),
+          url: (parts[1] || "").trim()
+        };
+      }).filter(row => row.title && row.url);
+    }
 
-        items.forEach(function (item) {
-          if (!leadItem && item.isLead) {
-            leadItem = item;
-          } else {
-            rest.push(item);
-          }
-        });
+    fetch(SHEET_URL)
+      .then(res => res.text())
+      .then(text => {
+        const entries = parseTSV(text);
+        const listEl = document.getElementById("headline-list");
 
-        // Render lead if present
-        var leadEl = document.getElementById('lead');
-        if (leadItem) {
-          var a = document.createElement('a');
-          a.href = leadItem.url;
-          a.target = '_blank';
-          a.textContent = leadItem.title;
-          leadEl.appendChild(a);
-        }
-
-        // Render up to 100 other headlines
-        var listEl = document.getElementById('headline-list');
-        rest.slice(0, 100).forEach(function (item) {
-          var li = document.createElement('li');
-          var link = document.createElement('a');
-          link.href = item.url;
-          link.target = '_blank';
-          link.textContent = item.title;
-          li.appendChild(link);
+        // Show up to 100 entries
+        entries.slice(0, 100).forEach(item => {
+          const li = document.createElement("li");
+          const a = document.createElement("a");
+          a.href = item.url;
+          a.target = "_blank";
+          a.textContent = item.title;
+          li.appendChild(a);
           listEl.appendChild(li);
         });
       })
-      .catch(function (error) {
-        console.error('Error loading headlines.json:', error);
-        document.getElementById('updated').textContent =
-          'Error loading headlines.';
+      .catch(err => {
+        console.error("Error loading sheet:", err);
+        document.getElementById("headline-list").innerHTML =
+          "<li>Unable to load headlines.</li>";
       });
   </script>
 </body>
