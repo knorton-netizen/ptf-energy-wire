@@ -16,30 +16,39 @@
       margin-right: auto;
     }
 
+    /* CFP-style logo text */
     h1 {
       text-align: center;
-      font-size: 40px;
-      margin-bottom: 20px;
-      letter-spacing: 2px;
+      font-size: 48px;
+      font-weight: 900;
+      letter-spacing: 4px;
+      margin-bottom: 30px;
+      margin-top: 10px;
+      text-transform: uppercase;
+      text-shadow: 1px 1px 0 #000;
     }
 
+    /* Remove bullets */
     ul {
       list-style: none;
       padding-left: 0;
     }
 
+    /* Link styling like Citizen Free Press */
     li {
-      margin-bottom: 8px;
-      font-size: 16px;
+      margin-bottom: 10px;
+      font-size: 18px;
+      line-height: 1.3;
     }
 
     a {
-      color: #000;
-      text-decoration: none;
+      color: #0040ff;               /* CFP link blue */
+      text-decoration: underline;   /* Underlined */
+      font-weight: bold;            /* Bold */
     }
 
     a:hover {
-      text-decoration: underline;
+      color: #cc0000;               /* CFP hover red */
     }
   </style>
 </head>
@@ -50,48 +59,42 @@
   <ul id="headline-list"></ul>
 
   <script>
-  // Your published Google Sheet link:
-  const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSlMMB865om-gPDhmU1bTumRO82xhNtfLBf4Xqt8f1E599MlPDkZu3GEA8mOyyR1l1PHvHMP7wUKkSI/pub?output=csv";
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSlMMB865om-gPDhmU1bTumRO82xhNtfLBf4Xqt8f1E599MlPDkZu3GEA8mOyyR1l1PHvHMP7wUKkSI/pub?gid=1917781597&single=true&output=csv";
 
-  function parseCSV(text) {
-    const lines = text.trim().split("\n");
-    if (lines.length <= 1) return [];
+    function parseCSV(text) {
+      const lines = text.trim().split("\n");
+      if (lines.length <= 1) return [];
 
-    // First row is header: Title,URL
-    return lines.slice(1).map(line => {
-      // split into exactly two pieces: title, url
-      const firstComma = line.indexOf(",");
-      if (firstComma === -1) return { title: "", url: "" };
+      return lines.slice(1).map(line => {
+        const firstComma = line.indexOf(",");
+        if (firstComma === -1) return { title: "", url: "" };
+        const title = line.slice(0, firstComma).trim();
+        const url = line.slice(firstComma + 1).trim();
+        return { title, url };
+      }).filter(row => row.title && row.url);
+    }
 
-      const title = line.slice(0, firstComma).trim();
-      const url = line.slice(firstComma + 1).trim();
+    fetch(SHEET_URL)
+      .then(res => res.text())
+      .then(text => {
+        const entries = parseCSV(text);
+        const listEl = document.getElementById("headline-list");
 
-      return { title, url };
-    }).filter(row => row.title && row.url);
-  }
-
-  fetch(SHEET_URL)
-    .then(res => res.text())
-    .then(text => {
-      const entries = parseCSV(text);
-      const listEl = document.getElementById("headline-list");
-
-      entries.slice(0, 100).forEach(item => {
-        const li = document.createElement("li");
-        const a = document.createElement("a");
-        a.href = item.url;
-        a.target = "_blank";
-        a.textContent = item.title;
-        li.appendChild(a);
-        listEl.appendChild(li);
+        entries.slice(0, 100).forEach(item => {
+          const li = document.createElement("li");
+          const a = document.createElement("a");
+          a.href = item.url;
+          a.target = "_blank";
+          a.textContent = item.title;
+          li.appendChild(a);
+          listEl.appendChild(li);
+        });
+      })
+      .catch(err => {
+        console.error("Error loading sheet:", err);
+        document.getElementById("headline-list").innerHTML =
+          "<li>Unable to load headlines.</li>";
       });
-    })
-    .catch(err => {
-      console.error("Error loading sheet:", err);
-      document.getElementById("headline-list").innerHTML =
-        "<li>Unable to load headlines.</li>";
-    });
-</script>
-
+  </script>
 </body>
 </html>
