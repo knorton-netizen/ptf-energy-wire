@@ -17,16 +17,27 @@
     }
 
     /* CFP-style logo text */
-    h1 {
-      text-align: center;
-      font-size: 48px;
-      font-weight: 900;
-      letter-spacing: 4px;
-      margin-bottom: 30px;
-      margin-top: 10px;
-      text-transform: uppercase;
-      text-shadow: 1px 1px 0 #000;
-    }
+    /* CFP-style logo text */
+    
+h1 {
+  text-align: center;
+  font-size: 54px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+
+  font-style: italic;
+  transform: skew(-8deg);
+
+  margin-top: 10px;
+  margin-bottom: 30px;
+
+  /* Multi-layer text shadow to mimic CFP depth */
+  text-shadow:
+      3px 3px 0 #7f7f7f,
+      6px 6px 0 #bfbfbf;
+}
+
 
     /* Remove bullets */
     ul {
