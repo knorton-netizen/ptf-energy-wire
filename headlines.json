@@ -1,0 +1,18 @@
+{
+  "updated": "December 3, 2025 — 11:00 AM ET",
+  "items": [
+    {
+      "title": "LEAD: Alaska opens the door to new oil & gas leasing on the North Slope",
+      "url": "https://example.com/lead-article",
+      "isLead": true
+    },
+    {
+      "title": "Producers warn new methane rules could shut in U.S. wells",
+      "url": "https://example.com/story-1"
+    },
+    {
+      "title": "Gulf Coast port sees record crude exports",
+      "url": "https://example.com/story-2"
+    }
+  ]
+}
