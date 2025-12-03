@@ -38,7 +38,7 @@
       color: #000;
     }
 
-    .section-title {
+    .list-title {
       margin-top: 25px;
       font-size: 14px;
       text-transform: uppercase;
@@ -71,28 +71,66 @@
 <body>
 
   <h1>POWER THE FUTURE WIRE</h1>
-  <div class="updated">Updated December 3, 2025 — 10:15 AM ET</div>
+  <div id="updated" class="updated">Loading…</div>
 
-  <!-- LEAD STORY -->
-  <div class="lead">
-    <a href="https://example.com/lead-article" target="_blank">
-      LEAD: Alaska opens the door to new oil & gas leasing on the North Slope
-    </a>
-  </div>
+  <!-- Lead story will be injected here -->
+  <div id="lead" class="lead"></div>
 
-  <!-- OIL & GAS -->
-  <div class="section-title">Oil & Gas</div>
-  <ul>
-    <li><a href="https://example.com/story-1" target="_blank">Producers warn new methane rules could shut in U.S. wells</a></li>
-    <li><a href="https://example.com/story-2" target="_blank">Gulf Coast port sees record crude exports</a></li>
-  </ul>
+  <div class="list-title">Latest Energy Headlines</div>
+  <ul id="headline-list"></ul>
 
-  <!-- ELECTRICITY & GRID -->
-  <div class="section-title">Electricity & Grid</div>
-  <ul>
-    <li><a href="https://example.com/story-3" target="_blank">Midwest grid operator warns of summer blackout risk</a></li>
-    <li><a href="https://example.com/story-4" target="_blank">Nuclear plant extension deal could stabilize regional prices</a></li>
-  </ul>
+  <script>
+    // Load headlines from headlines.json and render them
+    fetch('headlines.json')
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+        // Updated time
+        var updatedEl = document.getElementById('updated');
+        updatedEl.textContent = 'Updated ' + data.updated;
 
+        var items = data.items || [];
+
+        // Separate lead (first item with isLead === true)
+        var leadItem = null;
+        var rest = [];
+
+        items.forEach(function (item) {
+          if (!leadItem && item.isLead) {
+            leadItem = item;
+          } else {
+            rest.push(item);
+          }
+        });
+
+        // Render lead if present
+        var leadEl = document.getElementById('lead');
+        if (leadItem) {
+          var a = document.createElement('a');
+          a.href = leadItem.url;
+          a.target = '_blank';
+          a.textContent = leadItem.title;
+          leadEl.appendChild(a);
+        }
+
+        // Render up to 100 other headlines
+        var listEl = document.getElementById('headline-list');
+        rest.slice(0, 100).forEach(function (item) {
+          var li = document.createElement('li');
+          var link = document.createElement('a');
+          link.href = item.url;
+          link.target = '_blank';
+          link.textContent = item.title;
+          li.appendChild(link);
+          listEl.appendChild(li);
+        });
+      })
+      .catch(function (error) {
+        console.error('Error loading headlines.json:', error);
+        document.getElementById('updated').textContent =
+          'Error loading headlines.';
+      });
+  </script>
 </body>
 </html>
